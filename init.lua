@@ -94,6 +94,25 @@ require('lazy').setup({
   },
 
   {
+      {
+          "jcdickinson/http.nvim",
+          build = "cargo build --workspace --release"
+      },
+      {
+          "jcdickinson/codeium.nvim",
+          dependencies = {
+              "jcdickinson/http.nvim",
+              "nvim-lua/plenary.nvim",
+              "hrsh7th/nvim-cmp",
+          },
+          config = function()
+              require("codeium").setup({
+              })
+          end
+      }
+  },
+
+  {
     -- Autocompletion
     'hrsh7th/nvim-cmp',
     dependencies = {
@@ -106,6 +125,10 @@ require('lazy').setup({
 
       -- Adds a number of user-friendly snippets
       'rafamadriz/friendly-snippets',
+
+      --- A native neovim extension for Codeium
+      -- https://github.com/jcdickinson/codeium.nvim
+      'jcdickinson/codeium.nvim',
     },
   },
 
@@ -114,29 +137,28 @@ require('lazy').setup({
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
-    opts = {
-      -- See `:help gitsigns.txt`
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
-      on_attach = function(bufnr)
-        vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk, { buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
-        vim.keymap.set('n', '<leader>gn', require('gitsigns').next_hunk, { buffer = bufnr, desc = '[G]o to [N]ext Hunk' })
-        vim.keymap.set('n', '<leader>ph', require('gitsigns').preview_hunk, { buffer = bufnr, desc = '[P]review [H]unk' })
-      end,
-    },
+    config = require("custom.plugins.gitsigns"),
+  },
+  {
+    --- Extensible Neovim Scrollbar
+    -- https://github.com/petertriho/nvim-scrollbar
+    'petertriho/nvim-scrollbar',
+    config = require("custom.plugins.scrollbar"),
+  },
+  {
+    --- Hlsearch Lens for Neovim
+    -- https://github.com/kevinhwang91/nvim-hlslens
+    'kevinhwang91/nvim-hlslens',
+    config = require("custom.plugins.hlslens"),
   },
 
   {
-    -- Theme inspired by Atom
-    'navarasu/onedark.nvim',
+    -- doom-emacs' doom-one Lua port for Neovim
+    -- https://github.com/NTBBloodbath/doom-one.nvim
+    'NTBBloodbath/doom-one.nvim',
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme 'onedark'
+      vim.cmd.colorscheme 'doom-one'
     end,
   },
 
@@ -144,14 +166,7 @@ require('lazy').setup({
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
     -- See `:help lualine.txt`
-    opts = {
-      options = {
-        icons_enabled = false,
-        theme = 'onedark',
-        component_separators = '|',
-        section_separators = '',
-      },
-    },
+    config = require("custom.plugins.lualine"),
   },
 
   {
@@ -159,10 +174,7 @@ require('lazy').setup({
     'lukas-reineke/indent-blankline.nvim',
     -- Enable `lukas-reineke/indent-blankline.nvim`
     -- See `:help indent_blankline.txt`
-    opts = {
-      char = '┊',
-      show_trailing_blankline_indent = false,
-    },
+    config = require("custom.plugins.indent-blankline"),
   },
 
   -- "gc" to comment visual regions/lines
@@ -218,10 +230,15 @@ require('lazy').setup({
 -- NOTE: You can change these options as you wish!
 
 -- Set highlight on search
-vim.o.hlsearch = false
+vim.o.hlsearch = true
+
+-- Set highlight on cursorline & cursorcolumn
+vim.o.cursorcolumn = true
+vim.o.cursorline = true
 
 -- Make line numbers default
-vim.wo.number = true
+vim.o.number = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
@@ -242,14 +259,121 @@ vim.o.ignorecase = true
 vim.o.smartcase = true
 
 -- Keep signcolumn on by default
-vim.wo.signcolumn = 'yes'
+vim.o.signcolumn = 'yes'
 
 -- Decrease update time
-vim.o.updatetime = 250
-vim.o.timeoutlen = 300
+vim.o.updatetime = 100
+vim.o.timeoutlen = 400
+
+-- 'block' style cursor all modes no blink
+vim.o.guicursor = "a:blinkon0"
+
+-- [Side]Scrolloff
+vim.o.scrolloff = 999
+vim.o.sidescrolloff = 999
+
+-- reduce signcolumn movement. (1 - overwrites git, 2 - signs swap)
+-- vim.o.signcolumn = "yes:2"
+
+-- `10000` is the max history size allowed in nvim
+vim.o.history = 10000
+
+-- `10000` is the max number of changes that can be undone
+vim.o.undolevels = 10000
+
+-- exec cmds global by default
+vim.o.gdefault = true
+
+-- set window title
+vim.o.title = true
+
+-- expand tabs to spaces
+vim.o.expandtab = true
+
+-- round to next shiftwidth increment
+vim.o.shiftround = true
+
+-- number column width
+-- vim.o.numberwidth = 4
+
+-- autoindenting when starting a new line
+vim.o.smartindent = true
+
+-- copy structure of the existing lines indent when autoindenting
+vim.o.copyindent = true
+
+-- ignore case in search patterns
+vim.o.ignorecase = true
+
+-- honor case in search patterns if uppercase char is present
+vim.o.smartcase = true
+
+-- Every wrapped line will continue visually indented (same amount of space as the beginning of that line), thus preserving horizontal blocks of text
+vim.o.breakindent = true
+
+-- wrap long lines at a character in 'breakat' rather than at the last character
+vim.o.linebreak = true
+
+-- -- ["grepprg"] = "rg --vimgrep --no-heading --smart-case",
+-- ["grepprg"] = "rg --hidden --vimgrep --smart-case --",
+vim.o.grepprg = "rg --hidden --vimgrep --smart-case --"
+
+vim.o.grepformat = "%f:%l:%c:%m"
+
+vim.o.showbreak = "↳ "
+vim.o.list = false
+vim.o.listchars = "eol:↲,tab:▸ ,space:·,trail:_"
+
+-- 0 forces user confirmation on initial load
+vim.o.cmdheight = 1
+
+-- Time in milliseconds to wait for a key code sequence to complete
+-- vim.o.ttimeoutlen = 10
+
+-- If this many milliseconds nothing is typed the swap file will be written to disk (see |crash-recovery|).  Also used for the |CursorHold| autocommand event.
+vim.o.updatetime = 100
+
+-- diff mode options
+-- vim.o.diffopt = "internal,filler,closeoff"
+
+-- conceal text
+vim.o.conceallevel = 0
+
+-- good spelling wordlist
+vim.o.dictionary = "~/.config/nvim/spell/en.utf-8.add"
+vim.o.spell = true
+vim.o.spelllang = "en_us"
+
+-- split directions
+vim.o.splitbelow = true
+vim.o.splitright = true
+
+-- avoid all the |hit-enter| prompts caused by file messages
+vim.o.shortmess = "filnxtToOsCFAI"
+
+-- define what chars a part of keywords
+vim.o.iskeyword = "@,48-57,192-255,$,_,-"
+
+-- vim.o.tags = "./tags,**5/tags,tags;~"
+
+-- sequence of letters describing how automatic formatting is done
+--    no auto-formatting `gw`/`gww`: format line; `gp`/`gwap`: format paragraph
+vim.o.formatoptions = "roqnl1"
+
+vim.o.more = false
+vim.o.wrap = false
+
+-- do not include linebreak in selection
+vim.o.selection = "old"
+
+-- 0: default; 2: possibly fixes "'redrawtime' exceeded, syntax highlighting disabled" issue?
+-- vim.o.regexpengine = 2
+
+-- Set popup menu max height
+vim.o.pumheight = 20
 
 -- Set completeopt to have a better completion experience
-vim.o.completeopt = 'menuone,noselect'
+vim.o.completeopt = 'menu,menuone,preview,noselect'
 
 -- NOTE: You should make sure your terminal supports this
 vim.o.termguicolors = true
@@ -313,10 +437,82 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
+  -- ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
+  ensure_installed = {
+    "c",
+    "lua",
+    "vim",
+    "vimdoc",
+    "query",
+    "awk",
+    "bash",
+    "comment",
+    "commonlisp",
+    "css",
+    "csv",
+    "diff",
+    "dockerfile",
+    "dot",
+    "fennel",
+    "git_config",
+    "git_rebase",
+    "gitattributes",
+    "gitcommit",
+    "gitignore",
+    "go",
+    "gomod",
+    "gosum",
+    "gowork",
+    "gpg",
+    "hcl",
+    "html",
+    "htmldjango",
+    "http",
+    "hurl",
+    "ini",
+    "java",
+    "javascript",
+    "jq",
+    "jsdoc",
+    "json",
+    "jsonc",
+    "julia",
+    "latex",
+    "luadoc",
+    "luap",
+    "make",
+    "markdown",
+    "markdown_inline",
+    "mermaid",
+    "ninja",
+    "nix",
+    "passwd",
+    "pem",
+    "perl",
+    "php",
+    "puppet",
+    "python",
+    "regex",
+    "requirements",
+    "robot",
+    "rst",
+    "ruby",
+    "rust",
+    "scss",
+    "smithy",
+    "sql",
+    "terraform",
+    "todotxt",
+    "toml",
+    "tsv",
+    "tsx",
+    "typescript",
+    "xml",
+    "yaml",
+  },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-  auto_install = false,
+  auto_install = true,
 
   highlight = { enable = true },
   indent = { enable = true },
@@ -378,8 +574,8 @@ require('nvim-treesitter.configs').setup {
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+-- vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
+-- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
 
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
@@ -477,27 +673,182 @@ mason_lspconfig.setup_handlers {
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
-local cmp = require 'cmp'
-local luasnip = require 'luasnip'
-require('luasnip.loaders.from_vscode').lazy_load()
+-- local cmp = require 'cmp'
+-- local luasnip = require 'luasnip'
+local cmp = require("cmp")
+local luasnip = require("luasnip")
+require('luasnip.loaders.from_vscode').lazy_load({ paths = vim.fn.stdpath("config") .. "/my-snippets/" })
 luasnip.config.setup {}
 
-cmp.setup {
+local kind_icons = {
+  Text          = "  ",
+  Method        = " 󰆧 ",
+  Function      = " 󰊕 ",
+  Constructor   = "  ",
+  Field         = " 󰇽 ",
+  Variable      = "  ",
+  Class         = " 󰠱 ",
+  Interface     = "  ",
+  Module        = "  ",
+  Property      = " 󰜢 ",
+  Unit          = "  ",
+  Value         = " 󰎠 ",
+  Enum          = "  ",
+  Keyword       = " 󰌋 ",
+  Snippet       = "  ",
+  Color         = " 󰏘 ",
+  File          = " 󰈙 ",
+  Reference     = "  ",
+  Folder        = " 󰉋 ",
+  EnumMember    = "  ",
+  Constant      = " 󰏿 ",
+  Struct        = "  ",
+  Event         = "  ",
+  Operator      = " 󰆕 ",
+  TypeParameter = " 󰅲 ",
+  Codeium       = "  ",
+}
+
+--- Given an LSP item kind, returns a nerdfont icon
+--- @param kind_type string LSP item kind
+--- @return string Nerdfont Icon
+local function get_kind_icon(kind_type)
+  return kind_icons[kind_type]
+end
+
+--- Wraps nvim_replace_termcodes
+--- @param str string
+--- @return string
+local function replace_termcodes(str)
+  return vim.api.nvim_replace_termcodes(str, true, true, true)
+end
+--- Helper function to check what <Tab> behaviour to use
+--- @return boolean
+local function check_backspace()
+  local col = vim.fn.col(".") - 1
+  return col == 0 or vim.fn.getline("."):sub(col, col):match("%s")
+end
+
+--- Register codeium
+-- local has_codeium, codeium = pcall(require, "codeium.source")
+-- -- local has_codeium, codeium = pcall(require, "codeium.nvim.cmp")
+-- if has_codeium then
+--   cmp.register_source("codeium", codeium.new())
+-- end
+
+local Source = require("codeium.source")
+local Server = require("codeium.api")
+local update = require("codeium.update")
+
+local s = Server:new()
+update.download(function(err)
+	if not err then
+		Server.load_api_key()
+		s.start()
+	end
+end)
+
+local source = Source:new(s)
+cmp.register_source("codeium", source)
+
+cmp.setup({
+  completion = {
+    autocomplete = { "InsertEnter", "TextChanged" },
+    completeopt = table.concat(vim.opt.completeopt:get(), ","),
+  },
   snippet = {
     expand = function(args)
       luasnip.lsp_expand(args.body)
     end,
   },
-  mapping = cmp.mapping.preset.insert {
-    ['<C-n>'] = cmp.mapping.select_next_item(),
-    ['<C-p>'] = cmp.mapping.select_prev_item(),
-    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
-    ['<C-Space>'] = cmp.mapping.complete {},
-    ['<CR>'] = cmp.mapping.confirm {
+  view = {
+    entries = { name = 'custom' }, -- can be "custom", "wildmenu" or "native"
+    docs = {
+      auto_open = true,
+    },
+  },
+  window = {
+    completion = {
+      border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+      scrolloff = 999,
+    },
+    documentation = {
+      border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+      scrolloff = 999,
+    },
+  },
+  formatting = {
+    expandable_indicator = true,
+    format = function(entry, item)
+      item.kind = string.format("%s %s", get_kind_icon(item.kind), item.kind)
+      item.menu = ({
+        nvim_lsp                    = "[NvLSP]",
+        luasnip                     = "[LSnip]",
+        -- dynamic                     = "[Dynamic]",
+        codeium                     = "[Codeium]",
+        -- env                         = "[Env]",
+        -- buffer                      = "[Buf]",
+        -- nvim_lua                    = "[NvLua]",
+        -- mdlink                      = "[Mdlink]",
+        -- cmdline                     = "[Cmd]",
+        -- -- treesitter                  = "[Tree]",
+        -- -- vim_lsp                     = "[VLSP]",
+        -- path                        = "[Path]",
+        -- -- nvim_lsp_signature_help     = "[Sig]",
+        -- -- cmp_tabnine                 = "[TNine]",
+        -- rg                          = "[RG]",
+        -- -- look                        = "[Look]",
+        -- -- tags                        = "[Tags]",
+        -- -- doxygen                     = "[Doxygen]",
+        -- spell                       = "[Spell]",
+        -- -- dictionary                  = "[Dict]",
+        -- -- buffer_lines                = "[BufL]",
+      })[entry.source.name]
+      item.dup = ({
+        nvim_lsp = 1,
+        luasnip = 1,
+        -- dynamic = 1,
+        codeium = 1,
+        -- env = 1,
+        -- buffer = 1,
+        -- nvim_lua = 1,
+        -- mdlink = 1,
+        -- cmdline = 1,
+        -- -- treesitter = 1,
+        -- -- vim_lsp = 1,
+        -- path = 1,
+        -- -- nvim_lsp_signature_help = 1,
+        -- -- cmp_tabnine = 1,
+        -- rg = 1,
+        -- -- look = 1,
+        -- -- tags = 1,
+        -- -- doxygen = 1,
+        -- spell = 1,
+        -- -- dictionary = 1,
+        -- -- buffer_lines = 1,
+      })[entry.source.name] or 0
+      return item
+    end,
+  },
+  mapping = cmp.mapping.preset.insert({
+    -- ['<C-n>'] = cmp.mapping.select_next_item(),
+    -- ['<C-p>'] = cmp.mapping.select_prev_item(),
+    -- ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    -- ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    -- ['<C-Space>'] = cmp.mapping.complete {},
+    ['<C-j>'] = cmp.mapping.select_next_item(),
+    ['<C-k>'] = cmp.mapping.select_prev_item(),
+    ['<C-d>'] = cmp.mapping.scroll_docs(4),
+    ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-y>'] = cmp.mapping.complete(),
+    ['<C-s>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    ['<C-q>'] = cmp.mapping.close(),
+    ['<CR>'] = cmp.mapping.confirm({
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,
-    },
+    }),
     ['<Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_next_item()
@@ -516,12 +867,13 @@ cmp.setup {
         fallback()
       end
     end, { 'i', 's' }),
-  },
+  }),
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
+    { name = 'codeium' },
   },
-}
+})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
